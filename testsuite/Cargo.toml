@@ -12,8 +12,8 @@ semihosting = ["cortex-m-semihosting", "minitest/semihosting"]
 [dependencies]
 cortex-m-rt.path = "../cortex-m-rt"
 cortex-m.path = ".."
-minitest.path = "minitest"
 critical-section = "1.0.0"
+minitest.path = "minitest"
 
 [dependencies.rtt-target]
 version = "0.3.1"
