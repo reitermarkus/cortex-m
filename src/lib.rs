@@ -49,8 +49,7 @@ mod macros;
 pub mod asm;
 #[cfg(armv8m)]
 pub mod cmse;
-// This is only public so the `singleton` macro does not require depending on
-// the `critical-section` crate separately.
+// This is only public so the `singleton` macro works without needing to depend on the `critical-section` crate.
 #[doc(hidden)]
 pub mod critical_section;
 pub mod delay;
