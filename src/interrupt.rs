@@ -64,14 +64,14 @@ pub unsafe fn enable() {
 #[inline]
 pub fn free<F, R>(f: F) -> R
 where
-    F: FnOnce() -> R,
+    F: FnOnce(()) -> R,
 {
     let primask = crate::register::primask::read();
 
     // disable interrupts
     disable();
 
-    let r = f();
+    let r = f(());
 
     // If the interrupts were active before our `disable` call, then re-enable
     // them. Otherwise, keep them disabled
