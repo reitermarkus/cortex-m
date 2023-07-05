@@ -5,6 +5,8 @@ use core::ptr;
 
 use volatile_register::RW;
 
+use crate::interrupt::InterruptNumber;
+
 #[cfg(not(armv6m))]
 use super::cpuid::CsselrCacheType;
 #[cfg(not(armv6m))]
@@ -389,7 +391,7 @@ impl TryFrom<i8> for Exception {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", derive(PartialOrd, Hash))]
-pub enum Vector<INT = u16> {
+pub enum Vector<INT = Interrupt> {
     /// Thread mode
     ThreadMode,
 
@@ -413,7 +415,7 @@ impl Vector {
         match isrn {
             0 => Self::ThreadMode,
             2..=15 => Self::Exception(Exception::new_unchecked(isrn as i8 - 16)),
-            16..=511 => Self::Interrupt(isrn - 16),
+            16..=511 => Self::Interrupt(Interrupt(isrn - 16)),
             _ => core::hint::unreachable_unchecked(),
         }
     }
@@ -439,7 +441,7 @@ impl Vector {
         match self {
             Self::ThreadMode => Vector::ThreadMode,
             Self::Exception(ex) => Vector::Exception(*ex),
-            Self::Interrupt(irqn) => Vector::Interrupt(f(*irqn)),
+            Self::Interrupt(irqn) => Vector::Interrupt(f(irqn.number())),
         }
     }
 }
@@ -453,10 +455,20 @@ impl TryFrom<u16> for Vector {
         Ok(match isrn {
             0 => Self::ThreadMode,
             2..=15 => Self::Exception(Exception::try_from(isrn as i8 - 16).or(Err(isrn))?),
-            16..=511 => Self::Interrupt(isrn - 16),
+            16..=511 => Self::Interrupt(Interrupt(isrn - 16)),
             _ => return Err(isrn),
         })
     }
+}
+
+/// An interrupt.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Interrupt(u16);
+
+unsafe impl InterruptNumber for Interrupt {
+  fn number(self) -> u16 {
+    self.0
+  }
 }
 
 #[cfg(not(armv6m))]
